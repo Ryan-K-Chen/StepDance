@@ -42,9 +42,9 @@ def left_or_right(thumb, pinky):
     # print("pinky x: %.2f" % (pinky.x))
     result = 0
     if (pinky.x > thumb.x):
-        result = -1
-    else:
         result = 1
+    else:
+        result = -1
     return result
 
 # returns whether hand is left or right, but requires several samples first
@@ -55,9 +55,9 @@ def left_or_right_conf(thumb, pinky, conf):
     result = 0
     if (conf >= sample_count):
         if (pinky.x > thumb.x):
-            result = -1
-        else:
             result = 1
+        else:
+            result = -1
         conf = 0
     else:
         conf += 1
@@ -99,6 +99,7 @@ was_pinched = False
 
 while True:
     success, img = cap.read()
+    img = cv2.flip(img, 1)
     height, width, _ = img.shape
 
     imgRGB = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
@@ -163,22 +164,27 @@ while True:
         y_bottom = int(pt_bottom.y * height)
 
         color = (100,100,0)
+        slope_text = "straight"
 
-        slope = detect_sloped(x_top, y_top, x_bottom, y_bottom)
+        slope = -1 * detect_sloped(x_top, y_top, x_bottom, y_bottom)
+
         if (slope > 0.3):
             serial_slope = 1
             # print("head tilted right")
             color = (59, 255, 111)
+            slope_text = "right"
         elif (slope < -0.3):
             serial_slope = -1
             # print("head tilted left")
             color = (255, 59, 59)
+            slope_text = "left"
         else:
             serial_slope = 0
 
         cv2.circle(img, (x_top,y_top), 10, color, -1)
         cv2.circle(img, (x_bottom,y_bottom), 10, color, -1)
         cv2.line(img, (x_top,y_top), (x_bottom,y_bottom), color, 5)
+        cv2.putText(img, slope_text, (x_top - 100,y_top), cv2.FONT_HERSHEY_PLAIN, 3, color, 3)
 
 
     # write to serial out
@@ -191,7 +197,7 @@ while True:
 
     cv2.putText(img,str(int(fps)), (10,70), cv2.FONT_HERSHEY_PLAIN, 3, (255,0,255), 3)
     line_pos = starting_ypos * 720
-    cv2.putText(img,"mid:_____________________________", (10,int(line_pos)), cv2.FONT_HERSHEY_PLAIN, 3, (255,0,255), 3)
+    cv2.putText(img, str(round(serial_vib, 2)) + ":_____________________________", (10,int(line_pos)), cv2.FONT_HERSHEY_PLAIN, 3, (255,0,255), 3)
     # cv2.putText(img,"top:_____________________________", (10,10), cv2.FONT_HERSHEY_PLAIN, 3, (255,0,255), 3)
     # cv2.putText(img,"bot:_____________________________", (10,720), cv2.FONT_HERSHEY_PLAIN, 3, (255,0,255), 3)
 
