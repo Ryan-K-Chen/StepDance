@@ -9,8 +9,8 @@ import struct
 window_scale = 20
 
 # maximum and minimum vibrato values allowed for cases when tracking loses hand
-vib_limit_high = 1.2
-vib_limit_low = 0.8
+vib_limit_high = 1.25
+vib_limit_low = 0.75
 
 # converts y position on screen to vibrato scale
 # adjust multiplier to change vibrato intensity
