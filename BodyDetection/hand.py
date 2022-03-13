@@ -140,7 +140,10 @@ width = 0
 left_right_hand_result = 0;
 
 serial_slope = 0;
-serial_vib = 0;
+serial_vib = 1;
+
+starting_octave = 4
+prev_head_pos = 0
 
 # Set up communication on serial port
 # Open COM port (the COM port must be chosen manually)
@@ -208,6 +211,7 @@ while True:
         handDetected = False
         starting_ypos = -1
         left_right_hand_result = 0
+        serial_vib = 1
 
     # for face mesh creation
     face_results = faceMesh.process(imgRGB)
@@ -222,22 +226,30 @@ while True:
         y_bottom = int(pt_bottom.y * height)
 
         color = (100,100,0)
-        slope_text = "straight"
+        slope_text = "octave: " + str(starting_octave)
 
         slope = -1 * detect_sloped(x_top, y_top, x_bottom, y_bottom)
 
         if (slope > 0.3):
-            serial_slope = 1
+            if (not (prev_head_pos == 1) and not (starting_octave + 1 > 8)):
+                starting_octave += 1
+            serial_slope = starting_octave
+            prev_head_pos = 1
             # print("head tilted right")
             color = (59, 255, 111)
-            slope_text = "right"
+            slope_text = "octave: " + str(starting_octave)
         elif (slope < -0.3):
-            serial_slope = -1
+            if (not (prev_head_pos == -1) and not (starting_octave + 1 < 0)):
+                starting_octave -= 1
+            serial_slope = starting_octave
+            prev_head_pos = -1
             # print("head tilted left")
             color = (255, 59, 59)
-            slope_text = "left"
+            slope_text = "octave: " + str(starting_octave)
         else:
-            serial_slope = 0
+            serial_slope = starting_octave
+            prev_head_pos = 0
+
 
         cv2.circle(img, (x_top,y_top), 10, color, -1)
         cv2.circle(img, (x_bottom,y_bottom), 10, color, -1)
