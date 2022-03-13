@@ -1,9 +1,19 @@
 import pretty_midi
 import sys
 import struct
+import serial
 
 def get_start_time(note_arr_ele):
     return note_arr_ele[1]
+
+# Set up communication on serial port
+# Open COM port (the COM port must be chosen manually)
+try:
+    ser = serial.Serial('COM15', 115200, timeout=3)
+except Exception as e:
+    print(e)
+    ser = None
+    print('\033[93m' + "Unable to open the serial port, try a different COM port" + '\033[0m')
 
 note_arr = []
 
@@ -20,7 +30,7 @@ for instrument in midi_data.instruments:
         if (sys.argv[2] == "notes"):
             note_arr.append((piano_key, start_time, duration))
         elif (sys.argv[2] == "serial"):
-            note_arr.append(struct.pack('>fII', freq, start_time, duration))
+            note_arr.append(struct.pack('fII', freq, start_time, duration))  # Might need to be >fII
         else:
             note_arr.append((freq, start_time, duration))
 
@@ -32,6 +42,15 @@ if (sys.argv[2] == "serial"):
     for ele in note_arr:
         # each ele consists of (frequency, start_time, duration) in byte format (float, uint32, uint32)
         print(ele)
+        if ser is not None:
+            while ser.in_waiting == 0:
+                pass
+                # sleep(0.02)
+                # print("Waiting on data from Teensy")
+            answer = int.from_bytes(ser.read(1), "little")
+            if answer == 1:
+                ser.write(bytearray(ele))
+
 elif (sys.argv[2] == "notes"):
     for ele in note_arr:
         print("%s" % (ele[0]))
@@ -53,3 +72,5 @@ elif (sys.arv[2] == "bin"):
 
     f.close()
     print("written to " + str(sys.argv[1]) + ".h")
+
+ser.close()

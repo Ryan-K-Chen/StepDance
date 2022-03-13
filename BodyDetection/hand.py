@@ -2,6 +2,8 @@ import cv2
 import mediapipe as mp
 import time
 import math
+import serial
+import struct
 
 # negative when left
 # positive when right
@@ -73,6 +75,14 @@ def serial_output(vib_val, head_tilt_val):
     print("serial_vib  : %.2f" % serial_vib)
     print("serial_slope: %d" % serial_slope)
 
+    if ser is not None or True:
+        # Basically, we need to convert python data types to an array of bytes. We can do this by packing into a C
+        # struct and then converting to a bytearray
+
+        data_to_send = bytearray(struct.pack("fb", serial_vib, serial_slope))
+        #ser.write(data_to_send)
+
+
 cap = cv2.VideoCapture(0)
 
 def make_1080p():
@@ -121,6 +131,15 @@ was_pinched = False
 
 height = 0
 width = 0
+
+# Set up communication on serial port
+# Open COM port (the COM port must be chosen manually)
+try:
+    ser = serial.Serial('COM15', 115200, timeout=3)
+except Exception as e:
+    print(e)
+    ser = None
+    print('\033[93m' + "Unable to open the serial port, try a different COM port" + '\033[0m')
 
 while True:
     success, img = cap.read()
