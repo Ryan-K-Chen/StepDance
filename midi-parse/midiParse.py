@@ -1,3 +1,4 @@
+from numpy import byte
 import pretty_midi
 import sys
 import struct
@@ -43,18 +44,24 @@ if (sys.argv[2] == "serial"):
     print(note_arr)
     for ele in note_arr:
         # each ele consists of (frequency, start_time, duration) in byte format (float, uint32, uint32)
-        print(ele)
-        byte_form = struct.pack('fII', ele[0], ele[1], ele[2])
+        # print(ele)
+        byte_form = struct.pack('<fII', ele[0], ele[1], ele[2])
         if ser is not None:
             while ser.in_waiting == 0:
                 pass
                 # sleep(0.02)
                 # print("Waiting on data from Teensy")
             answer = int.from_bytes(ser.read(1), "little")
-            print("%x" % answer)
+            # print("%x" % answer)
             # if answer == 1:
-            print("%x, %x, %x, %x, %x, %x, %x, %x, %x, %x, %x, %x, " % (ele[0], ele[1], ele[2], ele[3], ele[4], ele[5], ele[6], ele[7], ele[8], ele[9], ele[10], ele[11]))
+            # print("%x, %x, %x, %x, %x, %x, %x, %x, %x, %x, %x, %x, " % (ele[0], ele[1], ele[2], ele[3], ele[4], ele[5], ele[6], ele[7], ele[8], ele[9], ele[10], ele[11]))
+            print(answer)
+            print(byte_form)
+            # print(len(byte_form))
             ser.write(byte_form)
+    
+    while True:
+        pass
 
 elif (sys.argv[2] == "notes"):
     for ele in note_arr:
