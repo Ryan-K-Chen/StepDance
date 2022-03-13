@@ -6,7 +6,7 @@ import serial
 import struct
 
 # scaling of window in %
-window_scale = 20
+window_scale = 100
 
 # maximum and minimum vibrato values allowed for cases when tracking loses hand
 vib_limit_high = 1.25
