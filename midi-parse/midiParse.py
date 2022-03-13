@@ -27,12 +27,12 @@ for instrument in midi_data.instruments:
         freq = round(pretty_midi.note_number_to_hz(note.pitch), 2)
         start_time = int(note.start * 1000000)
         duration = int(note.end * 1000000) - start_time
-        if (sys.argv[2] == "notes"):
-            note_arr.append((piano_key, start_time, duration))
-        elif (sys.argv[2] == "serial"):
-            note_arr.append(struct.pack('fII', freq, start_time, duration))  # Might need to be >fII
-        else:
-            note_arr.append((freq, start_time, duration))
+        # if (sys.argv[2] == "notes"):
+        #     note_arr.append((piano_key, start_time, duration))
+        # elif (sys.argv[2] == "serial"):
+        #     note_arr.append(struct.pack('fII', freq, start_time, duration))  # Might need to be >fII
+        # else:
+        note_arr.append((freq, start_time, duration, piano_key))
 
         # print(f'{freq:10} {start_time:10} {duration:10}'
 
@@ -42,6 +42,7 @@ if (sys.argv[2] == "serial"):
     for ele in note_arr:
         # each ele consists of (frequency, start_time, duration) in byte format (float, uint32, uint32)
         print(ele)
+        byte_form = struct.pack('fII', ele[0], ele[1], ele[2])
         if ser is not None:
             while ser.in_waiting == 0:
                 pass
@@ -53,7 +54,7 @@ if (sys.argv[2] == "serial"):
 
 elif (sys.argv[2] == "notes"):
     for ele in note_arr:
-        print("%s" % (ele[0]))
+        print("%s" % (ele[3]))
 elif (sys.argv[2] == "header"):
     f = open("../midiFiles/midiHeaders/" + str(sys.argv[1]) + ".h", "w")
     f.write("struct midi_note_t {\n\tfloat frequency;\n\tuint32_t start_time;\n\tuint32_t duration;\n};\n\nmidi_note_t MIDI_FILE [] = {\n")
