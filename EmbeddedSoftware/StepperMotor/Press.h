@@ -4,9 +4,9 @@
 class Press {
 public:
     uint8_t note;
-    float frequency;
+    uint8_t octave;
     float vibrato;
-    Press (uint8_t note_, float frequency_) : note(note_), frequency(frequency_) , vibrato(0.0){ }
+    Press (uint8_t note_, uint8_t octave_) : note(note_), octave(octave_), vibrato(0.0){ }
 };
 
 #endif

@@ -3,6 +3,7 @@
 
 #include "Note.h"
 #include "Press.h"
+#include "A440.h"
 #include "ClockTimer.h"
 
 class StepperMotor {
@@ -46,8 +47,8 @@ public:
 
     void update() {
         if (press) {
-            set_frequency(press->frequency);
-            // set_frequency(press->frequency * press->vibrato);
+            // set_frequency(press->frequency);
+            set_frequency(get_frequency(press->note, press->octave) * press->vibrato);
         }
         // if (!enabled_) {
         //     digitalWrite(en_, LOW);

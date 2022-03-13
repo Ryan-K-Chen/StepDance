@@ -2,6 +2,7 @@
 #define PIANO_H
 
 #include "StepperMotor.h"
+#include "ClockTimer.h"
 #include "A440.h"
 
 struct two_pin_t {
@@ -13,8 +14,8 @@ struct two_pin_t {
 
 struct serial_input_t {
     float  vibrato;
-    int8_t slope;
-    serial_input_t() : vibrato(0.0), slope(0) { }
+    int8_t octave;
+    serial_input_t() : vibrato(1.0), octave(4) { }
 };
 
 
@@ -25,6 +26,8 @@ private:
     uint8_t s0_, s1_, s2_, muxin1_, muxin2_;
     uint16_t button_state_;
     ClockTimerf button_update_ct_;
+    ClockTimerf serial_timer_;
+    uint32_t prev_ser_write_;
 
 public:
     serial_input_t serial_input;
@@ -34,7 +37,7 @@ public:
         num_steppers_(0), 
         s0_(-1), s1_(-1), s2_(-1), 
         muxin1_(-1), muxin2_(-1),
-        button_update_ct_(50) {}
+        button_update_ct_(50), serial_timer_(10), prev_ser_write_(0) { }
 
     void make_steppers(two_pin_t* stepper_pins, uint8_t num_steppers){
         num_steppers_ = num_steppers;
@@ -66,6 +69,14 @@ public:
         uint32_t current_time = micros();
         uint16_t prev_button_state = button_state_;
 
+        if(Serial.available() >= 5 && abs(micros() - prev_ser_write_) > 20000) {
+            while(Serial.available() >= 5) Serial.read();
+            Serial.readBytes((uint8_t*) &(serial_input.vibrato), 4);
+            Serial.readBytes((uint8_t*) &(serial_input.octave), 1);
+            prev_ser_write_ = micros();
+            Serial.write(serial_input.octave);
+        }
+
         if(button_update_ct_.ready(current_time)){
             for(uint8_t i = 0; i < 8; ++i){
                 digitalWrite(s0_, i & 0b001);
@@ -80,7 +91,7 @@ public:
                 if (mux2) button_state_ |=  (1 << (i + 8));
                 else      button_state_ &= ~(1 << (i + 8));
             }
-            Serial.println(button_state_, BIN);
+            // Serial.println(button_state_, BIN);
         }
 
         for(uint8_t i = 0; i < 12; ++i){
@@ -92,7 +103,7 @@ public:
                 bool leave = false;
                 for(uint8_t j = 0; j < num_steppers_ && !leave; ++j) {
                     if(!steppers_[j].press) {
-                        steppers_[j].press = new Press(i, get_frequency(i, 4));
+                        steppers_[j].press = new Press(i,serial_input.octave);
                         // steppers_[j].set_frequency(steppers_[j].press->frequency);
                         // Serial.print("Scheduled press on note "); Serial.println(i);
                         leave = true;
@@ -103,8 +114,8 @@ public:
                 bool leave = false;
                 for(uint8_t j = 0; j < num_steppers_ && !leave; ++j) {
                     if(steppers_[j].press){
-                        Serial.println(steppers_[j].press->note); 
-                        Serial.println(i); 
+                        // Serial.println(steppers_[j].press->note); 
+                        // Serial.println(i); 
                         if(steppers_[j].press->note == i) {
                             delete steppers_[i].press;
                             steppers_[j].press = NULL;
@@ -115,12 +126,14 @@ public:
                     }
                 }
             }
+            // Serial.println("finished");
         }
 
         for(uint8_t i = 0; i < num_steppers_; ++i) {
-            // if(serial_input.vibrato != 0.0){ // AND LEFT/RIGHT??
-            //     steppers_[i].press->vibrato = serial_input.vibrato;
-            // }
+            if(steppers_[i].press){
+                steppers_[i].press->vibrato = serial_input.vibrato;
+                steppers_[i].press->octave = serial_input.octave;
+            }
             steppers_[i].update();
         }
     }
