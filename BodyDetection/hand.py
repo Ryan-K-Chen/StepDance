@@ -97,6 +97,9 @@ direction_conf = 0
 starting_ypos = -1
 was_pinched = False
 
+height = 0
+width = 0
+
 while True:
     success, img = cap.read()
     img = cv2.flip(img, 1)
@@ -196,7 +199,7 @@ while True:
     pTime = cTime
 
     cv2.putText(img,str(int(fps)), (10,70), cv2.FONT_HERSHEY_PLAIN, 3, (255,0,255), 3)
-    line_pos = starting_ypos * 720
+    line_pos = starting_ypos * height
     cv2.putText(img, str(round(serial_vib, 2)) + ":_____________________________", (10,int(line_pos)), cv2.FONT_HERSHEY_PLAIN, 3, (255,0,255), 3)
     # cv2.putText(img,"top:_____________________________", (10,10), cv2.FONT_HERSHEY_PLAIN, 3, (255,0,255), 3)
     # cv2.putText(img,"bot:_____________________________", (10,720), cv2.FONT_HERSHEY_PLAIN, 3, (255,0,255), 3)
