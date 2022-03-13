@@ -17,9 +17,11 @@ void setup() {
   Serial.begin(115200);
   piano.make_steppers(pins, NUM_STEPPERS);
   piano.make_button_mux(mux_pins);
+    delay(2000);
   while(Serial.available()) {
     Serial.read();
   }
+  Serial.write(0x01);
 }
 
 void loop() {

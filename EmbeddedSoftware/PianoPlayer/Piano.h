@@ -69,13 +69,14 @@ public:
         uint32_t current_time = micros();
         uint16_t prev_button_state = button_state_;
 
-        if(Serial.available() >= 5 && abs(micros() - prev_ser_write_) > 20000) {
-            while(Serial.available() >= 5) Serial.read();
+        // && abs(micros() - prev_ser_write_) > 20000
+        if(Serial.available() >= 5 ) {
+            while(Serial.available() > 5) Serial.read();
             Serial.readBytes((uint8_t*) &(serial_input.vibrato), 4);
             Serial.readBytes((uint8_t*) &(serial_input.octave), 1);
             prev_ser_write_ = micros();
-            Serial.write(serial_input.octave);
         }
+            Serial.write(serial_input.octave);
 
         if(button_update_ct_.ready(current_time)){
             for(uint8_t i = 0; i < 8; ++i){
@@ -83,13 +84,15 @@ public:
                 digitalWrite(s1_, i & 0b010);
                 digitalWrite(s2_, i & 0b100);
                 uint8_t mux1 = digitalRead(muxin1_);//(analogRead(muxin1_) > 127);
-                uint8_t mux2 = digitalRead(muxin2_);//(analogRead(muxin2_) > 127);
                 // uint8_t mux1 = (analogRead(muxin1_) > 127);
                 // uint8_t mux2 = (analogRead(muxin2_) > 127);
                 if (mux1) button_state_ |=  (1 << i);
                 else      button_state_ &= ~(1 << i);
-                if (mux2) button_state_ |=  (1 << (i + 8));
-                else      button_state_ &= ~(1 << (i + 8));
+                if(i < 4){
+                    uint8_t mux2 = digitalRead(muxin2_);//(analogRead(muxin2_) > 127);
+                    if (mux2) button_state_ |=  (1 << (i + 8));
+                    else      button_state_ &= ~(1 << (i + 8));
+                }
             }
             // Serial.println(button_state_, BIN);
         }
@@ -117,7 +120,7 @@ public:
                         // Serial.println(steppers_[j].press->note); 
                         // Serial.println(i); 
                         if(steppers_[j].press->note == i) {
-                            delete steppers_[i].press;
+                            delete steppers_[j].press;
                             steppers_[j].press = NULL;
                             steppers_[j].set_frequency(0);
                             // Serial.print("Removed press on note "); Serial.println(i);
