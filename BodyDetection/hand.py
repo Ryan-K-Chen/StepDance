@@ -6,7 +6,7 @@ import serial
 import struct
 
 # scaling of window in %
-window_scale = 100
+window_scale = 230
 
 # maximum and minimum vibrato values allowed for cases when tracking loses hand
 vib_limit_high = 1.25
@@ -42,7 +42,8 @@ def left_or_right(thumb, pinky):
     if (pinky.x > thumb.x):
         result = 1
     else:
-        result = -1
+        # result = -1
+        result = 1
     return result
 
 # returns whether hand is left or right, but requires several samples first
@@ -75,7 +76,7 @@ def serial_output(vib_val, head_tilt_val):
         # Basically, we need to convert python data types to an array of bytes. We can do this by packing into a C
         # struct and then converting to a bytearray
 
-        data_to_send = bytearray(struct.pack("fb", serial_vib, serial_slope))
+        data_to_send = bytearray(struct.pack("f", serial_vib))
         #ser.write(data_to_send)
 
 
@@ -173,6 +174,7 @@ while True:
             #     print("right hand")
             # elif (left_right_hand_result < 0):
             #     print("left hand")
+            serial_vib = 1
 
             handDetected = True
         for handLms in hand_results.multi_hand_landmarks:
@@ -184,13 +186,13 @@ while True:
 
             curr_vib_value = y_to_vib(handLms.landmark[4].y, starting_ypos)
             if (abs(curr_vib_value) > vib_limit_high or abs(curr_vib_value) < vib_limit_low):
-                curr_vib_value = 0
+                curr_vib_value = 1
 
             if (is_pinched):
                 serial_vib = curr_vib_value
                 # print("vib scale: %.2f" % (curr_vib_value))
             else:
-                serial_vib = 0
+                serial_vib = 1
                 was_pinched = False
             for id, lm in enumerate(handLms.landmark):
                 h, w, c = img.shape
