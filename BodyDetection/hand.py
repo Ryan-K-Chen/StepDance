@@ -5,12 +5,8 @@ import math
 import serial
 import struct
 
-# negative when left
-# positive when right
-left_right_hand_result = 0;
-
-serial_slope = 0;
-serial_vib = 0;
+# scaling of window in %
+window_scale = 20
 
 # maximum and minimum vibrato values allowed for cases when tracking loses hand
 vib_limit_high = 1.2
@@ -101,6 +97,12 @@ def change_res(width, height):
     cap.set(3, width)
     cap.set(4, height)
 
+def rescale_frame(frame, percent=75):
+    width = int(frame.shape[1] * percent/ 100)
+    height = int(frame.shape[0] * percent/ 100)
+    dim = (width, height)
+    return cv2.resize(frame, dim, interpolation =cv2.INTER_AREA)
+
 # uncomment whatever resolution your camera supports
 # change_res()
 # make_1080p()
@@ -132,6 +134,13 @@ was_pinched = False
 height = 0
 width = 0
 
+# negative when left
+# positive when right
+left_right_hand_result = 0;
+
+serial_slope = 0;
+serial_vib = 0;
+
 # Set up communication on serial port
 # Open COM port (the COM port must be chosen manually)
 try:
@@ -144,9 +153,12 @@ except Exception as e:
 while True:
     success, img = cap.read()
     img = cv2.flip(img, 1)
+
     height, width, _ = img.shape
 
     imgRGB = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    imgRGB.flags.writeable = False
+
     hand_results = hands.process(imgRGB)
 
     if hand_results.multi_hand_landmarks:
@@ -245,5 +257,20 @@ while True:
     # cv2.putText(img,"top:_____________________________", (10,10), cv2.FONT_HERSHEY_PLAIN, 3, (255,0,255), 3)
     # cv2.putText(img,"bot:_____________________________", (10,720), cv2.FONT_HERSHEY_PLAIN, 3, (255,0,255), 3)
 
-    cv2.imshow("Image", img)
+    scaled_frame = rescale_frame(img, percent=window_scale)
+    cv2.imshow('Step Dance', scaled_frame)
+    # comment out scales you dont want
+    # default
+    # cv2.imshow("Image", img)
+
+    # custom scales
+    # frame150 = rescale_frame(img, percent=150)
+    # cv2.imshow('frame150', frame150)
+    # frame20 = rescale_frame(img, percent=20)
+    # cv2.imshow('frame20', frame20)
+    # frame200 = rescale_frame(img, percent=200)
+    # cv2.imshow('frame200', frame200)
     cv2.waitKey(1)
+
+cap.release()
+cv2.destroyAllWindows()
