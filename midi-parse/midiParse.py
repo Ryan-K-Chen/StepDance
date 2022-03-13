@@ -50,7 +50,8 @@ if (sys.argv[2] == "serial"):
                 # print("Waiting on data from Teensy")
             answer = int.from_bytes(ser.read(1), "little")
             if answer == 1:
-                ser.write(bytearray(ele))
+                ser.write(byte_form)
+                # ser.write(bytearray(ele))
 
 elif (sys.argv[2] == "notes"):
     for ele in note_arr:
