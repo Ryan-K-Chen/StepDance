@@ -72,12 +72,12 @@ def serial_output(vib_val, head_tilt_val):
     print("serial_vib  : %.2f" % serial_vib)
     print("serial_slope: %d" % serial_slope)
 
-    if ser is not None or True:
+    if ser is not None:
         # Basically, we need to convert python data types to an array of bytes. We can do this by packing into a C
         # struct and then converting to a bytearray
 
-        data_to_send = bytearray(struct.pack("f", serial_vib))
-        #ser.write(data_to_send)
+        data_to_send = bytearray(struct.pack("fb", serial_vib, serial_slope))
+        ser.write(data_to_send)
 
 
 cap = cv2.VideoCapture(0)
