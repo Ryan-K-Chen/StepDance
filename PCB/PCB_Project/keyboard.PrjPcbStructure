@@ -1,0 +1,3 @@
+Record=TopLevelDocument|FileName=top.SchDoc|SheetNumber=1
+Record=SheetSymbol|SourceDocument=top.SchDoc|Designator=U_keys_set|SchDesignator=U_keys_set|FileName=keys_set.SchDoc|SheetNumber=3|SymbolType=Normal|RawFileName=keys_set.SchDoc|DesignItemId= |SourceLibraryName= |ObjectKind=Sheet Symbol|RevisionGUID= |ItemGUID= |VaultGUID= 
+Record=SheetSymbol|SourceDocument=top.SchDoc|Designator=U_stepper_control|SchDesignator=U_stepper_control|FileName=stepper_control.SchDoc|SheetNumber=2|SymbolType=Normal|RawFileName=stepper_control.SchDoc|DesignItemId= |SourceLibraryName= |ObjectKind=Sheet Symbol|RevisionGUID= |ItemGUID= |VaultGUID= 
